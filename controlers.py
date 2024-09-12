@@ -1,5 +1,5 @@
 from fastapi import APIRouter,status,HTTPException
-from req_models import Req_Produto
+from req_models import Req_Produto,Req_Estoque
 from services import Produto_service
 from db_models import Produto
 from utils import calcular_preco
@@ -20,6 +20,15 @@ def pegar_id(id:int):
         return produto
     raise HTTPException(status.HTTP_404_NOT_FOUND,"produto não existe")
 
+@rota.get('/filtrar/{atr}/{filtro}', response_model=list[Produto])
+def get_filtro(atr:str,filtro:str):
+
+
+    result = service_produto.get_produto_all([atr,filtro])
+
+    if result:
+        return result
+    raise HTTPException(status.HTTP_404_NOT_FOUND,"atributo ou filtro não existem ")
 
 @rota.post('/',response_model=Produto)
 def criar(requisicao:Req_Produto):
@@ -48,6 +57,14 @@ def atualizar(id:int,requisicao:Req_Produto):
     result = service_produto.put_produto(produto=produto,id=id)
     if not result:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,"não são aceitos valores negativos no atributo 'quantidade_estoque'")
+    return result
+
+@rota.put("/atualizar/{id}", response_model=int)
+def atualizar_estoque(id:int,requisicao:Req_Estoque):
+
+    result = service_produto.put_estoque(requisicao.tipo,requisicao.quantidade,id=id)
+    if not result:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,"valor inválido")
     return result
 
 

@@ -9,3 +9,7 @@ class Req_Produto(BaseModel):
     categoria: str | None = None
     franquia: str | None = None
 
+class Req_Estoque(BaseModel):
+
+    tipo: str
+    quantidade: int

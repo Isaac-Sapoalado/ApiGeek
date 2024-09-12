@@ -16,10 +16,20 @@ class Produto_service():
         fecth = select(Produto).where(Produto.id==id)
         return self.session.exec(fecth).one_or_none()
     
-    def get_produto_all(self):
+    def get_produto_all(self,filtro=None):
 
         fecth = select(Produto)
+        if filtro:
+            if filtro[0] == 'nome':
+                fecth = fecth.where(Produto.nome == filtro[1])
+            if filtro[0] == 'preco':
+                fecth = fecth.where(Produto.preco <= filtro[1])
+            if filtro[0] == 'categoria':
+                fecth = fecth.where(Produto.categoria == filtro[1])
+            if filtro[0] == 'franquia':
+                fecth = fecth.where(Produto.franquia == filtro[1])
         return self.session.exec(fecth).all()
+    #Permita a filtragem de produtos por nome, preço, categoria ou franquia.
     
     def post_produto(self,produto:Produto):
 
@@ -51,7 +61,26 @@ class Produto_service():
         self.session.refresh(produto)
         return produto
 
-    
+    def put_estoque(self,tipo:str,qtd:int,id:int):
+
+        fecth = select(Produto).where(Produto.id == id)
+        produto = self.session.exec(fecth).one_or_none()
+        qtd = abs(qtd)
+        if tipo == 'venda' and 0 <= qtd <= produto.quantidade_estoque:
+            produto.quantidade_estoque -= qtd
+            self.session.add(produto)
+            self.session.commit()
+            self.session.refresh(produto)
+            return produto.quantidade_estoque
+        if tipo == 'reposicao':
+            produto.quantidade_estoque += qtd
+            self.session.add(produto)
+            self.session.commit()
+            self.session.refresh(produto)
+            return produto.quantidade_estoque
+
+        return False
+
     def delete_produto(self,id:int):
 
         fecth = select(Produto).where(Produto.id == id)
@@ -65,6 +94,3 @@ class Produto_service():
         self.session.commit()
         return produto
 
-#Produtos só podem ser excluídos se estiverem fora de estoque.V
-#Ao atualizar a quantidade em estoque de um produto, a API deve impedir a inserção de valores negativos.V
-#Não é possível vender se não tiver Estoque. Reposição incrementa a quantidade.V
