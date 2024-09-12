@@ -6,8 +6,12 @@
 #endpoints--->
 ---
 get - link + api/geek/
+--
 get_id - link + api/geek/id
+--
 post - link + api/geek/
+--
 put - link + api/geek/id
+--
 del - link + api/geek/id
 --
